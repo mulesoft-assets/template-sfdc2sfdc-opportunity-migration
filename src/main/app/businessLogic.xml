@@ -19,28 +19,28 @@ http://www.mulesoft.org/schema/mule/sfdc http://www.mulesoft.org/schema/mule/sfd
 http://www.mulesoft.org/schema/mule/smtp http://www.mulesoft.org/schema/mule/smtp/current/mule-smtp.xsd
 http://www.mulesoft.org/schema/mule/http http://www.mulesoft.org/schema/mule/http/current/mule-http.xsd">
 
- <batch:job name="migrateAccountsBatch">
+ <batch:job name="migrateOpportunitiesBatch">
         <batch:threading-profile poolExhaustedAction="WAIT"/>
         <batch:input>
-            <sfdc:query config-ref="SalesforceA" query="SELECT AccountNumber, AccountSource, AnnualRevenue, BillingCity, BillingCountry, BillingPostalCode, BillingState, BillingStreet, Description, Fax, Industry, LastModifiedDate, Name, NumberOfEmployees, OwnerId, Ownership, ParentId, Phone, Rating, RecordTypeId, ShippingCity, ShippingCountry, ShippingPostalCode, ShippingState, ShippingStreet, Sic, SicDesc, Site, TickerSymbol, Type, Website FROM Account WHERE NumberOfEmployees &gt; 5000 AND Industry IN ('Education','Government')" doc:name="query Accounts from Salesforce instance A" fetchSize="${page.size}"/>
+            <sfdc:query config-ref="SalesforceA" query="dsql:SELECT LastModifiedDate, Name, Amount, StageName, Probability, CloseDate FROM Opportunity WHERE Amount &gt; 5000" doc:name="query Opportunities from Salesforce instance A" fetchSize="${page.size}"/>
         </batch:input> 
         <batch:process-records>
-            <batch:step name="getAccountInBStep">
-                <enricher source="#[payload]" target="#[recordVars['accountInB']]" doc:name="store result in record var 'accountInB'">
-                    <sfdc:query-single config-ref="SalesforceB" query="SELECT Id, Name, LastModifiedDate FROM Account WHERE Name = '#[payload['Name']]'" doc:name="query Account in Salesforce instance B"/>
+            <batch:step name="getOpportunityInBStep">
+                <enricher source="#[payload]" target="#[recordVars['opportunityInB']]" doc:name="store result in record var 'opportunityInB'">
+                    <sfdc:query-single config-ref="SalesforceB" query="SELECT Id, Name, LastModifiedDate FROM Opportunity WHERE Name = '#[payload['Name']]'" doc:name="query Opportunity in Salesforce instance B"/>
                 </enricher>
             </batch:step>
-            <batch:step name="selectNewerAccountStep" filter-expression="#[recordVars['accountInB'] is NullPayload]">
+            <batch:step name="selectNewerOpportunityStep" filter-expression="#[recordVars['opportunityInB'] is NullPayload]">
                 <choice doc:name="Choice">
-                    <when expression="#[org.mule.kicks.util.AccountDateComparator.isAfter(payload, recordVars['accountInB'])]">
-                        <expression-component doc:name="define Id in SalesForce Intance B"><![CDATA[payload['Id'] = recordVars['accountInB']['Id']]]></expression-component>
+                    <when expression="#[org.mule.kicks.util.OpportunityDateComparator.isAfter(payload, recordVars['opportunityInB'])]">
+                        <expression-component doc:name="define Id in SalesForce Intance B"><![CDATA[payload['Id'] = recordVars['opportunityInB']['Id']]]></expression-component>
                     </when>
                     <otherwise>
-                        <set-payload doc:name="set to null to skip this account" value="#[return null]"/>
+                        <set-payload doc:name="set to null to skip this opportunity" value="#[return null]"/>
                     </otherwise>
                 </choice>
             </batch:step>
-            <batch:step name="createAccountsInBStep" filter-expression="#[payload is NullPayload]">
+            <batch:step name="createOpportunitiesInBStep" filter-expression="#[payload is NullPayload]">
                 <expression-component doc:name="remove field LastModifiedDate"><![CDATA[payload.remove('LastModifiedDate');]]></expression-component>
                 <expression-component doc:name="changing type of field NumberOfEmployees to int"><![CDATA[if (payload.get('NumberOfEmployees') == null) {
 	payload.remove('NumberOfEmployees') 
@@ -49,7 +49,7 @@ http://www.mulesoft.org/schema/mule/http http://www.mulesoft.org/schema/mule/htt
 	payload.put('NumberOfEmployees', intNumberOfEmployees);
 }]]></expression-component>
                 <batch:commit size="200" doc:name="Batch Commit">
-					<sfdc:upsert config-ref="SalesforceB"  type="Account" doc:name="upsert accounts in org B" externalIdFieldName="Id">
+					<sfdc:upsert config-ref="SalesforceB"  type="Opportunity" doc:name="upsert Opportunities in org B" externalIdFieldName="Id">
                         <sfdc:objects ref="#[payload]"/>
 					</sfdc:upsert>
                 </batch:commit>
@@ -74,7 +74,7 @@ http://www.mulesoft.org/schema/mule/http http://www.mulesoft.org/schema/mule/htt
 This flow should control the direction of the application, and it should be called by the different endpoints that your Kick exposes to trigger it.
 
 ">
-        <batch:execute name="migrateAccountsBatch" doc:name="trigger migrateAccountsBatch"/>
+        <batch:execute name="migrateOpportunitiesBatch" doc:name="trigger migrateOpportunitiesBatch"/>
         <exception-strategy ref="defaultChoiceExceptionStrategy" doc:name="catch Exception and call defaultChoiceExceptionStrategy"/>
     </flow>
     
