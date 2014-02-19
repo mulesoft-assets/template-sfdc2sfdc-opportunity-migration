@@ -26,6 +26,7 @@ http://www.mulesoft.org/schema/mule/http http://www.mulesoft.org/schema/mule/htt
         </batch:input> 
         <batch:process-records>
             <batch:step name="getOpportunityInBStep">
+                <logger message="Query: #[payload]" level="INFO" doc:name="Logger"/>
                 <enricher source="#[payload]" target="#[recordVars['opportunityInB']]" doc:name="store result in record var 'opportunityInB'">
                     <sfdc:query-single config-ref="SalesforceB" query="SELECT Id, Name, LastModifiedDate FROM Opportunity WHERE Name = '#[payload['Name']]'" doc:name="query Opportunity in Salesforce instance B"/>
                 </enricher>
@@ -42,16 +43,24 @@ http://www.mulesoft.org/schema/mule/http http://www.mulesoft.org/schema/mule/htt
             </batch:step>
             <batch:step name="createOpportunitiesInBStep" filter-expression="#[payload is NullPayload]">
                 <expression-component doc:name="remove field LastModifiedDate"><![CDATA[payload.remove('LastModifiedDate');]]></expression-component>
-                <expression-component doc:name="changing type of field NumberOfEmployees to int"><![CDATA[if (payload.get('NumberOfEmployees') == null) {
-	payload.remove('NumberOfEmployees') 
+                <expression-component doc:name="changing type of field Amount to double"><![CDATA[if (payload.get('Amount') == null) {
+	payload.remove('Amount') 
 } else {
-	int intNumberOfEmployees = Integer.parseInt(payload.get('NumberOfEmployees'));
-	payload.put('NumberOfEmployees', intNumberOfEmployees);
+	double doubleAmount = Double.parseDouble(payload.get('Amount'));
+	payload.put('Amount', doubleAmount);
+}
+
+if (payload.get('CloseDate') == null) {
+	payload.remove('CloseDate') 
+} else {
+	java.util.Date dateCloseDate = new java.text.SimpleDateFormat("yyyy-MM-dd").parse(payload.get('CloseDate'));
+	payload.put('CloseDate', dateCloseDate);
 }]]></expression-component>
                 <batch:commit size="200" doc:name="Batch Commit">
 					<sfdc:upsert config-ref="SalesforceB"  type="Opportunity" doc:name="upsert Opportunities in org B" externalIdFieldName="Id">
                         <sfdc:objects ref="#[payload]"/>
 					</sfdc:upsert>
+                    <logger message="Upsert result: #[payload]" level="INFO" doc:name="log Upsert result"/>
                 </batch:commit>
             </batch:step>
         </batch:process-records>

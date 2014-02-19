@@ -3,7 +3,10 @@ package org.mule.kicks.integration;
 import static org.junit.Assert.assertEquals;
 import static org.mule.kicks.builders.SfdcObjectBuilder.anOpportunity;
 
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -36,7 +39,7 @@ public class BusinessLogicIT extends AbstractKickTestCase {
 
 	protected static final int TIMEOUT_SECONDS = 60;
 
-	private static final String KICK_NAME = "opportunitymigration";
+	private static final String KICK_NAME = "sfdc2sfdc-opportunity-migration";
 
 	private BatchTestHelper helper;
 
@@ -113,19 +116,20 @@ public class BusinessLogicIT extends AbstractKickTestCase {
 		// This opportunity should not be synced as amount is below 5000
 		createdOpportunities.add(anOpportunity()
 				.with("Name", buildUniqueName(KICK_NAME, "NotSyncOne"))
-				.with("CloseDate", "2032-06-12").with("Amount", 12).build());
+				.with("CloseDate", date("2032-06-12")).with("Amount", 12).with("StageName", "MyStage1")
+				.build());
 
 		// This opportunity should not be synced as amount is below 5000
-		createdOpportunities
-				.add(anOpportunity()
-						.with("Name", buildUniqueName(KICK_NAME, "NotSyncTwo"))
-						.with("CloseDate", "2040-02-04").with("Amount", 1200.0)
-						.build());
+		createdOpportunities.add(anOpportunity()
+				.with("Name", buildUniqueName(KICK_NAME, "NotSyncTwo"))
+				.with("CloseDate", date("2040-02-04")).with("Amount", 1200.0).with("StageName", "MyStage2")
+				.build());
 
 		// This opportunity should BE synced
 		createdOpportunities.add(anOpportunity()
 				.with("Name", buildUniqueName(KICK_NAME, "YesSync"))
-				.with("CloseDate", "2070-03-13").with("Amount", 5001).build());
+				.with("CloseDate", date("2070-03-13")).with("Amount", 5001).with("StageName", "MyStage3")
+				.build());
 
 		MuleEvent event = flow.process(getTestEvent(createdOpportunities,
 				MessageExchangePattern.REQUEST_RESPONSE));
@@ -137,6 +141,10 @@ public class BusinessLogicIT extends AbstractKickTestCase {
 
 		System.out.println("Results of data creation in sandbox"
 				+ createdOpportunities.toString());
+	}
+
+	private Date date(String dateString) throws ParseException {
+		return new SimpleDateFormat("yyyy-MM-dd").parse(dateString);
 	}
 
 	private void deleteTestDataFromSandBox() throws MuleException, Exception {
