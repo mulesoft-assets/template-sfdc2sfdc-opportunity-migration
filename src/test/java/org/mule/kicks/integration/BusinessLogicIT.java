@@ -27,12 +27,10 @@ import org.mule.transport.NullPayload;
 import com.sforce.soap.partner.SaveResult;
 
 /**
- * The objective of this class is to validate the correct behavior of the Mule
- * Kick that make calls to external systems.
+ * The objective of this class is to validate the correct behavior of the Mule Kick that make calls to external systems.
  * 
- * The test will invoke the batch process and afterwards check that the
- * opportunities had been correctly created and that the ones that should be
- * filtered are not in the destination sand box.
+ * The test will invoke the batch process and afterwards check that the opportunities had been correctly created and that the ones that should be filtered are
+ * not in the destination sand box.
  * 
  */
 public class BusinessLogicIT extends AbstractKickTestCase {
@@ -72,35 +70,24 @@ public class BusinessLogicIT extends AbstractKickTestCase {
 		helper.awaitJobTermination(TIMEOUT_SECONDS * 1000, 500);
 		helper.assertJobWasSuccessful();
 
-		assertEquals(
-				"The opportunity should not have been sync",
-				null,
-				invokeRetrieveOpportunityFlow(checkOpportunityflow,
-						createdOpportunities.get(0)));
+		assertEquals("The opportunity should not have been sync", null, invokeRetrieveOpportunityFlow(checkOpportunityflow, createdOpportunities.get(0)));
 
-		assertEquals(
-				"The opportunity should not have been sync",
-				null,
-				invokeRetrieveOpportunityFlow(checkOpportunityflow,
-						createdOpportunities.get(1)));
+		assertEquals("The opportunity should not have been sync", null, invokeRetrieveOpportunityFlow(checkOpportunityflow, createdOpportunities.get(1)));
 
-		Map<String, Object> payload = invokeRetrieveOpportunityFlow(
-				checkOpportunityflow, createdOpportunities.get(2));
-		assertEquals("The opportunity should have been sync",
-				createdOpportunities.get(2).get("Name"), payload.get("Name"));
+		Map<String, Object> payload = invokeRetrieveOpportunityFlow(checkOpportunityflow, createdOpportunities.get(2));
+		assertEquals("The opportunity should have been sync", createdOpportunities.get(2)
+																					.get("Name"), payload.get("Name"));
 	}
 
 	@SuppressWarnings("unchecked")
-	private Map<String, Object> invokeRetrieveOpportunityFlow(
-			SubflowInterceptingChainLifecycleWrapper flow,
-			Map<String, Object> opportunity) throws Exception {
+	private Map<String, Object> invokeRetrieveOpportunityFlow(SubflowInterceptingChainLifecycleWrapper flow, Map<String, Object> opportunity) throws Exception {
 		Map<String, Object> opportunityMap = new HashMap<String, Object>();
 
 		opportunityMap.put("Name", opportunity.get("Name"));
 
-		MuleEvent event = flow.process(getTestEvent(opportunityMap,
-				MessageExchangePattern.REQUEST_RESPONSE));
-		Object payload = event.getMessage().getPayload();
+		MuleEvent event = flow.process(getTestEvent(opportunityMap, MessageExchangePattern.REQUEST_RESPONSE));
+		Object payload = event.getMessage()
+								.getPayload();
 		if (payload instanceof NullPayload) {
 			return null;
 		} else {
@@ -114,33 +101,36 @@ public class BusinessLogicIT extends AbstractKickTestCase {
 		flow.initialise();
 
 		// This opportunity should not be synced as amount is below 5000
-		createdOpportunities.add(anOpportunity()
-				.with("Name", buildUniqueName(KICK_NAME, "NotSyncOne"))
-				.with("CloseDate", date("2032-06-12")).with("Amount", 12).with("StageName", "MyStage1")
-				.build());
+		createdOpportunities.add(anOpportunity().with("Name", buildUniqueName(KICK_NAME, "NotSyncOne"))
+												.with("CloseDate", date("2032-06-12"))
+												.with("Amount", 12)
+												.with("StageName", "MyStage1")
+												.build());
 
 		// This opportunity should not be synced as amount is below 5000
-		createdOpportunities.add(anOpportunity()
-				.with("Name", buildUniqueName(KICK_NAME, "NotSyncTwo"))
-				.with("CloseDate", date("2040-02-04")).with("Amount", 1200.0).with("StageName", "MyStage2")
-				.build());
+		createdOpportunities.add(anOpportunity().with("Name", buildUniqueName(KICK_NAME, "NotSyncTwo"))
+												.with("CloseDate", date("2040-02-04"))
+												.with("Amount", 1200.0)
+												.with("StageName", "MyStage2")
+												.build());
 
 		// This opportunity should BE synced
-		createdOpportunities.add(anOpportunity()
-				.with("Name", buildUniqueName(KICK_NAME, "YesSync"))
-				.with("CloseDate", date("2070-03-13")).with("Amount", 5001).with("StageName", "MyStage3")
-				.build());
+		createdOpportunities.add(anOpportunity().with("Name", buildUniqueName(KICK_NAME, "YesSync"))
+												.with("CloseDate", date("2070-03-13"))
+												.with("Amount", 5001)
+												.with("StageName", "MyStage3")
+												.build());
 
-		MuleEvent event = flow.process(getTestEvent(createdOpportunities,
-				MessageExchangePattern.REQUEST_RESPONSE));
+		MuleEvent event = flow.process(getTestEvent(createdOpportunities, MessageExchangePattern.REQUEST_RESPONSE));
 		List<SaveResult> results = (List<SaveResult>) event.getMessage()
-				.getPayload();
+															.getPayload();
 		for (int i = 0; i < results.size(); i++) {
-			createdOpportunities.get(i).put("Id", results.get(i).getId());
+			createdOpportunities.get(i)
+								.put("Id", results.get(i)
+													.getId());
 		}
 
-		System.out.println("Results of data creation in sandbox"
-				+ createdOpportunities.toString());
+		System.out.println("Results of data creation in sandbox" + createdOpportunities.toString());
 	}
 
 	private Date date(String dateString) throws ParseException {
@@ -156,21 +146,18 @@ public class BusinessLogicIT extends AbstractKickTestCase {
 		for (Map<String, Object> c : createdOpportunities) {
 			idList.add(c.get("Id"));
 		}
-		flow.process(getTestEvent(idList,
-				MessageExchangePattern.REQUEST_RESPONSE));
+		flow.process(getTestEvent(idList, MessageExchangePattern.REQUEST_RESPONSE));
 
 		// Delete the created opportunities in B
 		flow = getSubFlow("deleteOpportunityFromBFlow");
 		flow.initialise();
 		idList.clear();
 		for (Map<String, Object> c : createdOpportunities) {
-			Map<String, Object> opportunity = invokeRetrieveOpportunityFlow(
-					checkOpportunityflow, c);
+			Map<String, Object> opportunity = invokeRetrieveOpportunityFlow(checkOpportunityflow, c);
 			if (opportunity != null) {
 				idList.add(opportunity.get("Id"));
 			}
 		}
-		flow.process(getTestEvent(idList,
-				MessageExchangePattern.REQUEST_RESPONSE));
+		flow.process(getTestEvent(idList, MessageExchangePattern.REQUEST_RESPONSE));
 	}
 }
