@@ -43,7 +43,8 @@ http://www.mulesoft.org/schema/mule/http http://www.mulesoft.org/schema/mule/htt
             </batch:step>
             <batch:step name="createOpportunitiesInBStep" filter-expression="#[payload is NullPayload]">
                 <expression-component doc:name="remove field LastModifiedDate"><![CDATA[payload.remove('LastModifiedDate');]]></expression-component>
-                <expression-component doc:name="changing type of field Amount to double"><![CDATA[if (payload.get('Amount') == null) {
+                <expression-component doc:name="changing type of fields to corresponding ones"><![CDATA[// TODO - This is necessary due to: https://www.mulesoft.org/jira/browse/CLDCONNECT-1248
+if (payload.get('Amount') == null) {
 	payload.remove('Amount') 
 } else {
 	double doubleAmount = Double.parseDouble(payload.get('Amount'));

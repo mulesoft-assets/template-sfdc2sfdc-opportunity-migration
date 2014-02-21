@@ -15,7 +15,7 @@
 
 		<mule.version>3.5.0-cascade</mule.version>
 		<sfdc.version>5.4.3</sfdc.version>
-		
+
 		<eclipsePluginVersion>2.8</eclipsePluginVersion>
 		<jdkName>JavaSE-1.6</jdkName>
 		<jdk.version>1.6</jdk.version>
@@ -77,6 +77,7 @@
 					</execution>
 				</executions>
 				<configuration>
+					<useFile>false</useFile>
 					<additionalClasspathElements>
 						<additionalClasspathElement>${MULE_HOME}/conf/</additionalClasspathElement>
 						<!-- Location of the mule licence in Bamboo muleLicenseKey.lic -->
