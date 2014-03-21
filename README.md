@@ -2,8 +2,8 @@
 
 + [Use Case](#usecase)
 + [Run it!](#runit)
-    * [Running on CloudHub](#runoncloudhub)
     * [Running on premise](#runonopremise)
+    * [Running on CloudHub](#runoncloudhub)
     * [Properties to be configured](#propertiestobeconfigured)
 + [Customize It!](#customizeit)
     * [config.xml](#configxml)
@@ -38,6 +38,24 @@ In any of the ways you would like to run this Anypoint Template this is an examp
 <b>Start execution on: </b>Mon Jan 13 18:05:33 GMT-03:00 2014
 </pre>
 
+## Running on premise <a name="runonopremise"/>
+
+In this section we detail the way you have to run you Anypoint Temple on you computer.
+
+### Running on Studio <a name="runonstudio"/>
+Once you have imported you Anypoint Template into Anypoint Studio you need to follow these steps to run it:
+
++ Locate the properties file `mule.dev.properties`, in src/main/resources
++ Complete all the properties required as per the examples in the section [Properties to be configured](#propertiestobeconfigured)
++ Once that is done, right click on you Anypoint Template project folder 
++ Hover you mouse over `"Run as"`
++ Click on  `"Mule Application"`
+
+
+### Running on Mule ESB stand alone <a name="runonmuleesbstandalone"/> 
+Complete all properties in one of the property files, for example in [mule.prod.properties] (../blob/master/src/main/resources/mule.prod.properties) and run your app with the corresponding environment variable to use it. To follow the example, this will be `mule.env=prod`.
+
+After this, to trigger the use case you just need to hit the local http endpoint with the port you configured in your file. If this is, for instance, `9090` then you should hit: `http://localhost:9090/migrateOpportunities` and this will create a CSV report and send it to the mails set.
 
 ## Running on CloudHub <a name="runoncloudhub"/>
 
@@ -47,13 +65,6 @@ Once your app is all set and started, supposing you choose as domain name `sfdcO
 
 ### Deploying your Anypoint Template on CloudHub <a name="deployingyourkickoncloudhub"/>
 Mule Studio provides you with really easy way to deploy your Anypoint Template directly to CloudHub, for the specific steps to do so please check this [link](http://www.mulesoft.org/documentation/display/current/Deploying+Mule+Applications#DeployingMuleApplications-DeploytoCloudHub)
-
-
-## Running on premise <a name="runonopremise"/>
-Complete all properties in one of the property files, for example in [mule.prod.properties] (../blob/master/src/main/resources/mule.prod.properties) and run your app with the corresponding environment variable to use it. To follow the example, this will be `mule.env=prod`.
-
-After this, to trigger the use case you just need to hit the local http endpoint with the port you configured in your file. If this is, for instance, `9090` then you should hit: `http://localhost:9090/migrateOpportunities` and this will create a CSV report and send it to the mails set.
-
 
 
 ## Properties to be configured (With examples)<a name="propertiestobeconfigured"/>
