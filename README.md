@@ -60,8 +60,15 @@ After this, to trigger the use case you just need to hit the local http endpoint
 
 In order to use this Anypoint Template you need to configure properties (Credentials, configurations, etc.) either in properties file or in CloudHub as Environment Variables. Detail list with examples:
 
-### Application configuration
-+ http.port `9090` 
+#### Account Sync Policy
++ account.sync.policy `syncAccount`
++ account.id.in.b `001n0000003fMWXAA2`
+
+**Note:** the property **account.sync.policy** can take any of the three following values: 
+
++ **empty_value**: if the propety has no value assigned to it then application will do nothing in what respect to the account and it'll just move the contact over.
++ **syncAccount**: it will try to create the contact's account should this is not pressent in the Salesforce instance B.
++ **assignDummyAccount**: it will assign the cotact to an pre existing account in Salesforce instance B. For this it will use the value of  `account.id.in.b`. Finding the Id of the desired Account can be done by executing in your **Sales Force Developer Console** the following query: `SELECT Id, Name, Description FROM Account`.
 
 #### SalesForce Connector configuration for company A
 + sfdc.a.username `bob.dylan@orga`
