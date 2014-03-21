@@ -43,7 +43,7 @@ In any of the ways you would like to run this Anypoint Template this is an examp
 In this section we detail the way you have to run you Anypoint Temple on you computer.
 
 ### Running on Studio <a name="runonstudio"/>
-Once you have imported you Anypoint Template into Anypoint Studio you need to follow these steps to run it:
+Once you have imported your Anypoint Template into Anypoint Studio you need to follow these steps to run it:
 
 + Locate the properties file `mule.dev.properties`, in src/main/resources
 + Complete all the properties required as per the examples in the section [Properties to be configured](#propertiestobeconfigured)
