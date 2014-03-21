@@ -1,7 +1,7 @@
-package org.mule.kicks.integration;
+package org.mule.templates.integration;
 
 import static org.junit.Assert.assertEquals;
-import static org.mule.kicks.builders.SfdcObjectBuilder.anOpportunity;
+import static org.mule.templates.builders.SfdcObjectBuilder.anOpportunity;
 
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
@@ -19,25 +19,25 @@ import org.mule.MessageExchangePattern;
 import org.mule.api.MuleEvent;
 import org.mule.api.MuleException;
 import org.mule.construct.Flow;
-import org.mule.kicks.utils.BatchTestHelper;
 import org.mule.processor.chain.SubflowInterceptingChainLifecycleWrapper;
 import org.mule.tck.junit4.rule.DynamicPort;
+import org.mule.templates.utils.BatchTestHelper;
 import org.mule.transport.NullPayload;
 
 import com.sforce.soap.partner.SaveResult;
 
 /**
- * The objective of this class is to validate the correct behavior of the Mule Kick that make calls to external systems.
+ * The objective of this class is to validate the correct behavior of the Anypoint Template that make calls to external systems.
  * 
  * The test will invoke the batch process and afterwards check that the opportunities had been correctly created and that the ones that should be filtered are
  * not in the destination sand box.
  * 
  */
-public class BusinessLogicIT extends AbstractKickTestCase {
+public class BusinessLogicIT extends AbstractTemplateTestCase {
 
 	protected static final int TIMEOUT_SECONDS = 60;
 
-	private static final String KICK_NAME = "sfdc2sfdc-opportunity-migration";
+	private static final String TEMPLATE_NAME = "sfdc2sfdc-opportunity-migration";
 
 	private BatchTestHelper helper;
 
@@ -101,21 +101,21 @@ public class BusinessLogicIT extends AbstractKickTestCase {
 		flow.initialise();
 
 		// This opportunity should not be synced as amount is below 5000
-		createdOpportunities.add(anOpportunity().with("Name", buildUniqueName(KICK_NAME, "NotSyncOne"))
+		createdOpportunities.add(anOpportunity().with("Name", buildUniqueName(TEMPLATE_NAME, "NotSyncOne"))
 												.with("CloseDate", date("2032-06-12"))
 												.with("Amount", 12)
 												.with("StageName", "MyStage1")
 												.build());
 
 		// This opportunity should not be synced as amount is below 5000
-		createdOpportunities.add(anOpportunity().with("Name", buildUniqueName(KICK_NAME, "NotSyncTwo"))
+		createdOpportunities.add(anOpportunity().with("Name", buildUniqueName(TEMPLATE_NAME, "NotSyncTwo"))
 												.with("CloseDate", date("2040-02-04"))
 												.with("Amount", 1200.0)
 												.with("StageName", "MyStage2")
 												.build());
 
 		// This opportunity should BE synced
-		createdOpportunities.add(anOpportunity().with("Name", buildUniqueName(KICK_NAME, "YesSync"))
+		createdOpportunities.add(anOpportunity().with("Name", buildUniqueName(TEMPLATE_NAME, "YesSync"))
 												.with("CloseDate", date("2070-03-13"))
 												.with("Amount", 5001)
 												.with("StageName", "MyStage3")

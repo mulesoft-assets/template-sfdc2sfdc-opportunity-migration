@@ -1,4 +1,4 @@
-package org.mule.kicks.utils;
+package org.mule.templates.utils;
 
 import static junit.framework.Assert.assertTrue;
 

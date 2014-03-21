@@ -3,17 +3,17 @@
 	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
 
 	<modelVersion>4.0.0</modelVersion>
-	<groupId>org.mule.kicks</groupId>
+	<groupId>org.mule.templates</groupId>
 	<artifactId>sfdc2sfdc-opportunity-migration</artifactId>
 	<packaging>mule</packaging>
 	<version>1.0.0</version>
-	<name>SFDC2SFDC - Opportunity Migration Mule Kick Project</name>
+	<name>SFDC2SFDC - Opportunity Migration Anypoint Template Project</name>
 
 	<properties>
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 		<project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
 
-		<mule.version>3.5.0-cascade</mule.version>
+		<mule.version>3.5.0-M4</mule.version>
 		<sfdc.version>5.4.3</sfdc.version>
 
 		<eclipsePluginVersion>2.8</eclipsePluginVersion>
@@ -90,6 +90,7 @@
 				<artifactId>maven-surefire-plugin</artifactId>
 				<version>2.14.1</version>
 				<configuration>
+					<useFile>false</useFile>
 					<additionalClasspathElements>
 						<additionalClasspathElement>${MULE_HOME}/conf/</additionalClasspathElement>
 						Location of the mule licence in Bamboo muleLicenseKey.lic
@@ -452,16 +453,25 @@
 			<scope>test</scope>
 		</dependency>
 
-
-		<!-- Connectors -->
+		<!-- for testing -->
+		<dependency>
+			<groupId>xalan</groupId>
+			<artifactId>xalan</artifactId>
+			<version>2.7.1</version>
+			<scope>test</scope>
+		</dependency>
+		<dependency>
+			<groupId>com.mulesoft.muleesb.modules</groupId>
+			<artifactId>mule-module-batch-ee</artifactId>
+			<version>${mule.version}</version>
+			<scope>test</scope>
+		</dependency>
 		<dependency>
 			<groupId>org.mule.modules</groupId>
-			<artifactId>mule-module-sfdc</artifactId>
-			<version>${sfdc.version}</version>
+			<artifactId>mule-module-devkit-support</artifactId>
+			<version>${mule.version}</version>
+			<scope>test</scope>
 		</dependency>
-
-
-		<!-- for testing -->
 		<dependency>
 			<groupId>org.mule.tests</groupId>
 			<artifactId>mule-tests-functional</artifactId>
@@ -487,22 +497,30 @@
 			<scope>test</scope>
 		</dependency>
 		<dependency>
+			<groupId>org.mule.modules</groupId>
+			<artifactId>mule-module-sfdc</artifactId>
+			<version>${sfdc.version}</version>
+		</dependency>
+		<dependency>
 			<groupId>com.mulesoft.muleesb.modules</groupId>
 			<artifactId>mule-module-batch-ee</artifactId>
 			<version>${mule.version}</version>
 			<scope>test</scope>
+			<type>test-jar</type>
 		</dependency>
 		<dependency>
-			<groupId>xalan</groupId>
-			<artifactId>xalan</artifactId>
-			<version>2.7.1</version>
-			<scope>test</scope>
-		</dependency>
-		<dependency>
-			<groupId>org.mule.modules</groupId>
-			<artifactId>mule-module-devkit-support</artifactId>
+			<groupId>org.mule.tests</groupId>
+			<artifactId>mule-tests-functional</artifactId>
 			<version>${mule.version}</version>
 			<scope>test</scope>
+			<type>test-jar</type>
+		</dependency>
+		
+		<!-- Connectors -->
+		<dependency>
+			<groupId>org.mule.modules</groupId>
+			<artifactId>mule-module-sfdc</artifactId>
+			<version>${sfdc.version}</version>
 		</dependency>
 	</dependencies>
 

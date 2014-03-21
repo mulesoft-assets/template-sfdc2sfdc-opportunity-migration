@@ -33,7 +33,7 @@ http://www.mulesoft.org/schema/mule/http http://www.mulesoft.org/schema/mule/htt
             </batch:step>
             <batch:step name="selectNewerOpportunityStep" filter-expression="#[recordVars['opportunityInB'] is NullPayload]">
                 <choice doc:name="Choice">
-                    <when expression="#[org.mule.kicks.util.OpportunityDateComparator.isAfter(payload, recordVars['opportunityInB'])]">
+                    <when expression="#[org.mule.templates.util.OpportunityDateComparator.isAfter(payload, recordVars['opportunityInB'])]">
                         <expression-component doc:name="define Id in SalesForce Intance B"><![CDATA[payload['Id'] = recordVars['opportunityInB']['Id']]]></expression-component>
                     </when>
                     <otherwise>
@@ -79,9 +79,9 @@ if (payload.get('CloseDate') == null) {
         </batch:on-complete>
     </batch:job>
    
-    <flow name="mainFlow" doc:name="mainFlow" processingStrategy="synchronous" doc:description="This flow is the entry point to the Kick business logic.
+    <flow name="mainFlow" doc:name="mainFlow" processingStrategy="synchronous" doc:description="This flow is the entry point to the Anypoint Template business logic.
 
-This flow should control the direction of the application, and it should be called by the different endpoints that your Kick exposes to trigger it.
+This flow should control the direction of the application, and it should be called by the different endpoints that your Anypoint Template exposes to trigger it.
 
 ">
         <batch:execute name="migrateOpportunitiesBatch" doc:name="trigger migrateOpportunitiesBatch"/>

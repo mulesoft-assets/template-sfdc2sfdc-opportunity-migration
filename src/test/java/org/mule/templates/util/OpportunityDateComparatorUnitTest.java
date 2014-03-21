@@ -1,4 +1,4 @@
-package org.mule.kicks.util;
+package org.mule.templates.util;
 
 import static junit.framework.Assert.assertFalse;
 import static junit.framework.Assert.assertTrue;
@@ -10,6 +10,7 @@ import org.junit.Test;
 import org.mockito.Mock;
 import org.mule.api.MuleContext;
 import org.mule.api.transformer.TransformerException;
+import org.mule.templates.util.OpportunityDateComparator;
 
 public class OpportunityDateComparatorUnitTest {
 
