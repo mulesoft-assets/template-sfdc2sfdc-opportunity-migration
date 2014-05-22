@@ -30,7 +30,7 @@ http://www.mulesoft.org/schema/mule/http http://www.mulesoft.org/schema/mule/htt
                     <sfdc:query-single config-ref="SalesforceB" query="SELECT Id, Name, LastModifiedDate FROM Opportunity WHERE Name = '#[payload['Name']]'" doc:name="query Opportunity in Salesforce instance B"/>
                 </enricher>
             </batch:step>
-              <batch:step name="findOrCreateAccountInBSetp" filter-expression="! ('syncAccount'=='${account.sync.policy}')">
+              <batch:step name="findOrCreateAccountInBSetp" accept-expression="'syncAccount' == '${account.sync.policy}'">
             <choice doc:name="Choice">
                 	<when expression="#[payload['Account'] != null]">
                 <enricher source="#[payload]" target="#[flowVars['accountInB']]" doc:name="store result in accountInB">
@@ -64,10 +64,10 @@ payload['Account'].put('NumberOfEmployees', payload['Account']['NumberOfEmployee
                     </otherwise>
                 </choice>
             </batch:step>
-            <batch:step name="setDummyAccountIdStep" filter-expression="! ('assignDummyAccount'=='${account.sync.policy}')">
+            <batch:step name="setDummyAccountIdStep" accept-expression="'assignDummyAccount' == '${account.sync.policy}'">
                 <expression-component doc:name="set AccountId"><![CDATA[payload['AccountId']= '${account.id.in.b}';]]></expression-component>
             </batch:step>
-            <batch:step name="selectNewerOpportunityStep" filter-expression="#[recordVars['opportunityInB'] is NullPayload]">
+            <batch:step name="selectNewerOpportunityStep" accept-expression="!(recordVars['opportunityInB'] is NullPayload)">
                 <choice doc:name="Choice">
                     <when expression="#[org.mule.templates.util.OpportunityDateComparator.isAfter(payload, recordVars['opportunityInB'])]">
                         <expression-component doc:name="define Id in SalesForce Intance B"><![CDATA[payload['Id'] = recordVars['opportunityInB']['Id']]]></expression-component>
@@ -77,7 +77,7 @@ payload['Account'].put('NumberOfEmployees', payload['Account']['NumberOfEmployee
                     </otherwise>
                 </choice>
             </batch:step>
-            <batch:step name="createOpportunitiesInBStep" filter-expression="#[payload is NullPayload]">
+            <batch:step name="createOpportunitiesInBStep" accept-expression="!(payload is NullPayload)">
                 <expression-component doc:name="remove field LastModifiedDate"><![CDATA[payload.remove('LastModifiedDate');
 payload.remove('Account');]]></expression-component>
                 <expression-component doc:name="changing type of fields to corresponding ones"><![CDATA[// TODO - This is necessary due to: https://www.mulesoft.org/jira/browse/CLDCONNECT-1248
