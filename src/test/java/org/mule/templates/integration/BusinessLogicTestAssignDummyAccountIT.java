@@ -38,7 +38,7 @@ import com.sforce.soap.partner.SaveResult;
 
 public class BusinessLogicTestAssignDummyAccountIT extends AbstractTemplateTestCase {
 
-	private static final String ACCOUNT_ID_IN_B = "001n0000003gwUyAAI";
+	private static final String ACCOUNT_ID_IN_B = "0012000001AHHlvAAH";
 
 	private BatchTestHelper helper;
 
