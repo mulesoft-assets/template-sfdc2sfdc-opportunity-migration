@@ -6,8 +6,6 @@
 
 package org.mule.templates.integration;
 
-import static org.mule.templates.builders.SfdcObjectBuilder.anOpportunity;
-
 import java.io.File;
 import java.io.FileInputStream;
 import java.text.ParseException;
