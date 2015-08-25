@@ -86,6 +86,10 @@ There are no particular considerations for this Anypoint Template regarding Sale
 
 
 
+
+
+
+
 # Run it! <a name="runit"/>
 Simple steps to get Salesforce to Salesforce Opportunity Migration running.
 In any of the ways you would like to run this Anypoint Template this is an example of the output you'll see after hitting the HTTP endpoint:
@@ -144,6 +148,9 @@ Mule Studio provides you with really easy way to deploy your Template directly t
 ## Properties to be configured (With examples) <a name="propertiestobeconfigured"/>
 In order to use this Mule Anypoint Template you need to configure properties (Credentials, configurations, etc.) either in properties file or in CloudHub as Environment Variables. Detail list with examples:
 ### Application configuration
++ http.port `9090` 
++ page.size `200`
+
 #### Account Sync Policy
 + account.sync.policy `syncAccount`
 

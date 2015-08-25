@@ -95,7 +95,7 @@ payload map {
         </batch:on-complete>
     </batch:job>
    
-    <flow name="mainFlow" doc:name="mainFlow" processingStrategy="synchronous" doc:description="This flow is the entry point to the Anypoint Template business logic.
+    <flow name="mainFlow"  processingStrategy="synchronous" doc:description="This flow is the entry point to the Anypoint Template business logic.
 
 This flow should control the direction of the application, and it should be called by the different endpoints that your Anypoint Template exposes to trigger it.
 

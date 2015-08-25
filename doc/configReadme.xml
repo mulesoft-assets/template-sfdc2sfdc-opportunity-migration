@@ -45,6 +45,9 @@ After this, to trigger the use case you just need to hit the local http endpoint
 		</section>
 		<section id="application_configuration">
 		<![CDATA[
++ http.port `9090` 
++ page.size `200`
+
 #### Account Sync Policy
 + account.sync.policy `syncAccount`
 
