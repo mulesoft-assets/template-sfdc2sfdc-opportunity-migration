@@ -26,17 +26,17 @@ http://www.mulesoft.org/schema/mule/ee/dw http://www.mulesoft.org/schema/mule/ee
         </batch:input> 
         <batch:process-records>
             <batch:step name="getOpportunityInBStep">
-                <enricher source="#[payload == null ? null : payload.Id]" target="#[payload.Id]" doc:name="Enrich payload with existing SFDC Opportunity Id">
+                <enricher source="#[payload == null ? null : payload.Id]" target="#[payload.Id]" doc:name="enrich payload with existing SFDC Opportunity Id">
                     <sfdc:query-single config-ref="SalesforceB" query="SELECT Id FROM Opportunity WHERE Name = '#[payload['Name']]'" doc:name="query Opportunity in Salesforce instance B"/>
                 </enricher>
             </batch:step>
               <batch:step name="findOrCreateAccountInBSetp" accept-expression="#['syncAccount' == '${account.sync.policy}' &amp;&amp; payload['Account'] != null]">
-                <enricher source="#[payload == null ? null : payload.Id]" target="#[flowVars['accountInBId']]" doc:name="store result in accountInB">
+                <enricher source="#[payload == null ? null : payload.Id]" target="#[recordVars['accountInBId']]" doc:name="store result in accountInB">
                             <sfdc:query-single config-ref="SalesforceB" query="SELECT Id FROM Account WHERE Name = '#[payload['Account']['Name']]'" doc:name="query Account in  Salesforce Instance B"/>
                         </enricher>
                         <choice doc:name="Choice">
-                            <when expression="#[flowVars['accountInBId'] == null]">
-                                <enricher source="#[payload[0].getId()]" target="#[payload['AccountId']]" doc:name="store result in idOfAccountInB">
+                            <when expression="#[recordVars['accountInBId'] == null]">
+                                <enricher source="#[payload[0].getId()]" target="#[payload['AccountId']]" doc:name="enrich payload with AccountId">
                                     <processor-chain doc:name="Processor Chain">
                                         <dw:transform-message doc:name="Prepare Account data">
                                             <dw:set-payload><![CDATA[%dw 1.0
@@ -54,8 +54,8 @@ http://www.mulesoft.org/schema/mule/ee/dw http://www.mulesoft.org/schema/mule/ee
                                 </enricher>
                             </when>
                             <otherwise>
-                                <enricher target="#[payload['AccountId']]" doc:name="store result in idOfAccountInB">
-                                    <expression-transformer expression="#[flowVars['accountInBId']]" doc:name="get existing account id"/>
+                                <enricher target="#[payload['AccountId']]" doc:name="enrich payload with AccountId">
+                                    <expression-transformer expression="#[recordVars['accountInBId']]" doc:name="get existing account id"/>
                                 </enricher>
                             </otherwise>
                         </choice>
