@@ -8,7 +8,7 @@ xmlns:sfdc="http://www.mulesoft.org/schema/mule/sfdc"
 xmlns:smtp="http://www.mulesoft.org/schema/mule/smtp"
 xmlns:json="http://www.mulesoft.org/schema/mule/json"
 xmlns:spring="http://www.springframework.org/schema/beans" 
-version="EE-3.7.1" 
+ 
 xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" 
 xsi:schemaLocation="http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd
 http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans-current.xsd
@@ -44,7 +44,7 @@ http://www.mulesoft.org/schema/mule/ee/dw http://www.mulesoft.org/schema/mule/ee
 ---
 [payload.Account
 - "Id"
-++ ("NumberOfEmployees": payload.Account.NumberOfEmployees as :number when payload.Account.NumberOfEmployees != null otherwise 0)
+++ ("NumberOfEmployees": payload.Account.NumberOfEmployees as :number {class: "java.lang.Integer"} default 0)
 ]]]></dw:set-payload>
                                         </dw:transform-message>
                                         <sfdc:create config-ref="SalesforceB" type="Account" doc:name="create Account in Salesforce Instance B">
@@ -69,7 +69,7 @@ http://www.mulesoft.org/schema/mule/ee/dw http://www.mulesoft.org/schema/mule/ee
 payload map {
 ($ - "LastModifiedDate"
  - "Account"
-++ ("Amount": $.Amount as :number when $.Amount != null otherwise 0)
+++ ("Amount": $.Amount as :number {class: "java.lang.Double"} default 0)
 ++ ("CloseDate": $.CloseDate as :date when $.CloseDate != null otherwise null))
 }]]></dw:set-payload>
                     </dw:transform-message>
