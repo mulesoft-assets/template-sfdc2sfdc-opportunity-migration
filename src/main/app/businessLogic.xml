@@ -70,7 +70,7 @@ payload map {
 ($ - "LastModifiedDate"
  - "Account"
 ++ ("Amount": $.Amount as :number {class: "java.lang.Double"} default 0)
-++ ("CloseDate": $.CloseDate as :date when $.CloseDate != null otherwise null))
+++ ("CloseDate": $.CloseDate as :date {class: "java.util.Date"} when $.CloseDate != null otherwise null))
 }]]></dw:set-payload>
                     </dw:transform-message>
 					<sfdc:upsert config-ref="SalesforceB"  type="Opportunity" doc:name="upsert Opportunities in org B" externalIdFieldName="Id">
