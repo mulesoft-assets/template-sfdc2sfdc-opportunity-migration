@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
-<mule xmlns:core="http://www.mulesoft.org/schema/mule/core" xmlns:http="http://www.mulesoft.org/schema/mule/http" xmlns:tracking="http://www.mulesoft.org/schema/mule/ee/tracking" 
+<mule xmlns:dw="http://www.mulesoft.org/schema/mule/ee/dw" xmlns:core="http://www.mulesoft.org/schema/mule/core" xmlns:tracking="http://www.mulesoft.org/schema/mule/ee/tracking" 
 xmlns="http://www.mulesoft.org/schema/mule/core" 
 xmlns:doc="http://www.mulesoft.org/schema/mule/documentation" 
 xmlns:batch="http://www.mulesoft.org/schema/mule/batch"
@@ -8,7 +8,7 @@ xmlns:sfdc="http://www.mulesoft.org/schema/mule/sfdc"
 xmlns:smtp="http://www.mulesoft.org/schema/mule/smtp"
 xmlns:json="http://www.mulesoft.org/schema/mule/json"
 xmlns:spring="http://www.springframework.org/schema/beans" 
-version="EE-3.6.0" 
+ 
 xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" 
 xsi:schemaLocation="http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd
 http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans-current.xsd
@@ -17,7 +17,7 @@ http://www.mulesoft.org/schema/mule/ee/tracking http://www.mulesoft.org/schema/m
 http://www.mulesoft.org/schema/mule/json http://www.mulesoft.org/schema/mule/json/current/mule-json.xsd
 http://www.mulesoft.org/schema/mule/sfdc http://www.mulesoft.org/schema/mule/sfdc/current/mule-sfdc.xsd
 http://www.mulesoft.org/schema/mule/smtp http://www.mulesoft.org/schema/mule/smtp/current/mule-smtp.xsd
-http://www.mulesoft.org/schema/mule/http http://www.mulesoft.org/schema/mule/http/current/mule-http.xsd">
+http://www.mulesoft.org/schema/mule/ee/dw http://www.mulesoft.org/schema/mule/ee/dw/current/dw.xsd">
 
  <batch:job name="migrateOpportunitiesBatch">
         <batch:threading-profile poolExhaustedAction="WAIT"/>
@@ -26,68 +26,53 @@ http://www.mulesoft.org/schema/mule/http http://www.mulesoft.org/schema/mule/htt
         </batch:input> 
         <batch:process-records>
             <batch:step name="getOpportunityInBStep">
-                <enricher source="#[payload]" target="#[recordVars['opportunityInB']]" doc:name="store result in record var 'opportunityInB'">
-                    <sfdc:query-single config-ref="SalesforceB" query="SELECT Id, Name, LastModifiedDate FROM Opportunity WHERE Name = '#[payload['Name']]'" doc:name="query Opportunity in Salesforce instance B"/>
+                <enricher source="#[payload == null ? null : payload.Id]" target="#[payload.Id]" doc:name="enrich payload with existing SFDC Opportunity Id">
+                    <sfdc:query-single config-ref="SalesforceB" query="SELECT Id FROM Opportunity WHERE Name = '#[payload['Name']]'" doc:name="query Opportunity in Salesforce instance B"/>
                 </enricher>
             </batch:step>
-              <batch:step name="findOrCreateAccountInBSetp" accept-expression="'syncAccount' == '${account.sync.policy}'">
-            <choice doc:name="Choice">
-                	<when expression="#[payload['Account'] != null]">
-                <enricher source="#[payload]" target="#[flowVars['accountInB']]" doc:name="store result in accountInB">
-                    <sfdc:query-single config-ref="SalesforceB" query="SELECT Id, Name FROM Account WHERE Name = '#[payload['Account']['Name']]'" doc:name="query Account in  Salesforce Instance B"/>
-                </enricher>
-                <choice doc:name="Choice">
-                    <when expression="#[flowVars['accountInB'] is NullPayload]">
-                        <enricher doc:name="store result in idOfAccountInB" target="#[recordVars['idOfAccountInB']]">
-	                        <processor-chain doc:name="Processor Chain">
-                                <expression-component doc:name="remove unnecessary fields"><![CDATA[payload['Account'].remove('Id');
-payload['Account'].put('NumberOfEmployees', payload['Account']['NumberOfEmployees'] == null ? 0 :  Integer.parseInt(payload['Account']['NumberOfEmployees']));]]></expression-component>
-                                <set-payload value="#[ [payload['Account']]]" doc:name="Set Payload"/>
-       		                     <sfdc:create config-ref="SalesforceB" type="Account" doc:name="create Account in Salesforce Instance B">
-       	    	                     <sfdc:objects ref="#[payload]"/>
-       	        	             </sfdc:create>
-                                <expression-transformer expression="#[payload[0].getId()]" doc:name="get new account id"/>
-	                        </processor-chain>
+              <batch:step name="findOrCreateAccountInBSetp" accept-expression="#['syncAccount' == '${account.sync.policy}' &amp;&amp; payload['Account'] != null]">
+                <enricher source="#[payload == null ? null : payload.Id]" target="#[recordVars['accountInBId']]" doc:name="store result in accountInB">
+                            <sfdc:query-single config-ref="SalesforceB" query="SELECT Id FROM Account WHERE Name = '#[payload['Account']['Name']]'" doc:name="query Account in  Salesforce Instance B"/>
                         </enricher>
-                    </when>
-                    <otherwise>
-                        <enricher target="#[recordVars['idOfAccountInB']]" doc:name="store result in idOfAccountInB">
-     	                   <expression-transformer expression="#[flowVars['accountInB']['Id']]" doc:name="get new account id"/>
-                        </enricher>
-                    </otherwise>
-                </choice>
-                <expression-component doc:name="set AccountId"><![CDATA[payload['AccountId']= recordVars['idOfAccountInB'];
-]]></expression-component>
-</when>
-                    <otherwise>
-                        <logger level="INFO" doc:name="Logger" message="There is no Account assigned to this contact. Doing nothing"/>
-                    </otherwise>
-                </choice>
-            </batch:step>
-            <batch:step name="setDummyAccountIdStep" accept-expression="'assignDummyAccount' == '${account.sync.policy}'">
-                <expression-component doc:name="set AccountId"><![CDATA[payload['AccountId']= '${account.id.in.b}';]]></expression-component>
+                        <choice doc:name="Choice">
+                            <when expression="#[recordVars['accountInBId'] == null]">
+                                <enricher source="#[payload[0].getId()]" target="#[payload['AccountId']]" doc:name="enrich payload with AccountId">
+                                    <processor-chain doc:name="Processor Chain">
+                                        <dw:transform-message doc:name="Prepare Account data">
+                                            <dw:set-payload><![CDATA[%dw 1.0
+%output application/java
+---
+[payload.Account
+- "Id"
+++ ("NumberOfEmployees": payload.Account.NumberOfEmployees as :number {class: "java.lang.Integer"} default 0)
+]]]></dw:set-payload>
+                                        </dw:transform-message>
+                                        <sfdc:create config-ref="SalesforceB" type="Account" doc:name="create Account in Salesforce Instance B">
+                                            <sfdc:objects ref="#[payload]"/>
+                                        </sfdc:create>
+                                    </processor-chain>
+                                </enricher>
+                            </when>
+                            <otherwise>
+                                <enricher target="#[payload['AccountId']]" doc:name="enrich payload with AccountId">
+                                    <expression-transformer expression="#[recordVars['accountInBId']]" doc:name="get existing account id"/>
+                                </enricher>
+                            </otherwise>
+                        </choice>
             </batch:step>
             <batch:step name="createOpportunitiesInBStep" accept-expression="!(payload is NullPayload)">
-                <expression-component doc:name="remove field LastModifiedDate"><![CDATA[payload['Id'] = recordVars['opportunityInB'] is NullPayload ? null : recordVars['opportunityInB']['Id'];
-
-payload.remove('LastModifiedDate');
-payload.remove('Account');
-
-// TODO - This is necessary due to: https://www.mulesoft.org/jira/browse/CLDCONNECT-1248
-if (payload.get('Amount') == null) {
-	payload.remove('Amount');
-} else {
-	double doubleAmount = Double.parseDouble(payload.get('Amount'));
-	payload.put('Amount', doubleAmount);
-}
-
-if (payload.get('CloseDate') == null) {
-	payload.remove('CloseDate');
-} else {
-	java.util.Date dateCloseDate = new java.text.SimpleDateFormat("yyyy-MM-dd").parse(payload.get('CloseDate'));
-	payload.put('CloseDate', dateCloseDate);
-}]]></expression-component>
                 <batch:commit size="200" doc:name="Batch Commit">
+                    <dw:transform-message doc:name="Prepare Opportunity data">
+                        <dw:set-payload><![CDATA[%dw 1.0
+%output application/java
+---
+payload map {
+($ - "LastModifiedDate"
+ - "Account"
+++ ("Amount": $.Amount as :number {class: "java.lang.Double"} default 0)
+++ ("CloseDate": $.CloseDate as :date when $.CloseDate != null otherwise null))
+}]]></dw:set-payload>
+                    </dw:transform-message>
 					<sfdc:upsert config-ref="SalesforceB"  type="Opportunity" doc:name="upsert Opportunities in org B" externalIdFieldName="Id">
                         <sfdc:objects ref="#[payload]"/>
 
@@ -103,14 +88,14 @@ if (payload.get('CloseDate') == null) {
             		<logger message="Migration process has finished: #[payload]" level="INFO" doc:name="log 'Migration process has finished'"/>
                 </processor-chain>
 				<processor-chain>
-                	<json:object-to-json-transformer doc:name="transform BatchJobInstance to JSON"/>
-					<smtp:outbound-endpoint host="${smtp.host}" port="${smtp.port}" user="${smtp.user}" password="${smtp.password}" to="${mail.to}" from="${mail.from}" subject="${mail.subject}" responseTimeout="10000" connector-ref="gmailConnector" doc:name="send mail"/>
+                	<parse-template location="./src/main/resources/email/body.html" doc:name="Parse Template"/>
+					<smtp:outbound-endpoint host="${smtp.host}" port="${smtp.port}" user="${smtp.user}" password="${smtp.password}" to="${mail.to}" from="${mail.from}" subject="${mail.subject}" responseTimeout="10000" connector-ref="gmailConnector" doc:name="send mail" mimeType="text/html"/>
 				</processor-chain>
             </scatter-gather>
         </batch:on-complete>
     </batch:job>
    
-    <flow name="mainFlow" doc:name="mainFlow" processingStrategy="synchronous" doc:description="This flow is the entry point to the Anypoint Template business logic.
+    <flow name="mainFlow"  processingStrategy="synchronous" doc:description="This flow is the entry point to the Anypoint Template business logic.
 
 This flow should control the direction of the application, and it should be called by the different endpoints that your Anypoint Template exposes to trigger it.
 

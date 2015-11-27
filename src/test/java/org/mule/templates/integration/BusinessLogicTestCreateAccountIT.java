@@ -49,7 +49,6 @@ public class BusinessLogicTestCreateAccountIT extends AbstractTemplateTestCase {
 	@BeforeClass
 	public static void init() {
 		System.setProperty("account.sync.policy", "syncAccount");
-		System.setProperty("account.id.in.b", "");
 	}
 
 	@AfterClass
