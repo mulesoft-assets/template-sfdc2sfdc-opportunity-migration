@@ -88,7 +88,7 @@ payload map {
             		<logger message="Migration process has finished: #[payload]" level="INFO" doc:name="log 'Migration process has finished'"/>
                 </processor-chain>
 				<processor-chain>
-                	<parse-template location="./src/main/resources/email/body.html" doc:name="Parse Template"/>
+                	<parse-template location="email/body.html" doc:name="Parse Template"/>
 					<smtp:outbound-endpoint host="${smtp.host}" port="${smtp.port}" user="${smtp.user}" password="${smtp.password}" to="${mail.to}" from="${mail.from}" subject="${mail.subject}" responseTimeout="10000" connector-ref="gmailConnector" doc:name="send mail" mimeType="text/html"/>
 				</processor-chain>
             </scatter-gather>
