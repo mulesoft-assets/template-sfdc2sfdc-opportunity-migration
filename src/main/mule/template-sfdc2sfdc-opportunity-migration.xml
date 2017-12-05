@@ -89,7 +89,7 @@ payload ++ {accountInBId : vars.accountId.Id}]]></ee:set-variable>
 						</ee:variables>
 					</ee:transform>
 					<choice doc:name="Should be a new Account created?" doc:id="61765808-c8cf-4bb8-8dcb-ab1dd601010e" >
-						<when expression="#[vars.recordPayload..accountBId == null]" >
+						<when expression="#[vars.recordPayload.accountBId == null]" >
 							<ee:transform doc:name="Prepare Account data" doc:id="81cf7def-04bc-4039-b3d3-d87c534c6377">
 								<ee:message>
 									<ee:set-payload><![CDATA[%dw 2.0
