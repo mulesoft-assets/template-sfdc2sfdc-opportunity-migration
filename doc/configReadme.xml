@@ -5,11 +5,11 @@
 	</placeholders>
 	<sections>
 		<section id="use_case">
-As a Salesforce admin I want to synchronize Opportunities between two Salesforce orgs.
+As a Salesforce admin I want to migrate Opportunities from one Salesforce organization to another one.
 
 This Anypoint Template should serve as a foundation for the process of migrating Opportunities from one Salesforce instance to another, being able to specify filtering criteria and desired behavior when an Opportunity already exists in the destination org. 
 
-As implemented, this Anypoint Template leverage the [Batch Module](http://www.mulesoft.org/documentation/display/current/Batch+Processing).
+As implemented, this Anypoint Template leverages the [Batch Module](http://www.mulesoft.org/documentation/display/current/Batch+Processing).
 
 The batch job is divided in *Process* and *On Complete* stages.
 
@@ -50,12 +50,12 @@ After this, to trigger the use case you just need to hit the local http endpoint
 + **empty_value**: if the propety has no value assigned to it then application will do nothing in what respect to the account and it'll just move the opportunity over.
 + **syncAccount**: it will try to create the opportunity's account if this is not pressent in the Salesforce instance B.
 
-**SalesForce Connector configuration for company A**
+**Salesforce Connector configuration for company A**
 + sfdc.a.username `bob.dylan@orga`
 + sfdc.a.password `DylanPassword123`
 + sfdc.a.securityToken `avsfwCUl7apQs56Xq2AKi3X`
 
-**SalesForce Connector configuration for company B**
+**Salesforce Connector configuration for company B**
 + sfdc.b.username `joan.baez@orgb`
 + sfdc.b.password `JoanBaez456`
 + sfdc.b.securityToken `ces56arl7apQs56XTddf34X`
@@ -102,7 +102,7 @@ $H$H#  Inbound Flow
 		<section id="default_business_logic_xml">
 		<![CDATA[
 Functional aspect of the Anypoint Template is implemented on this XML, directed by one flow responsible of excecuting the logic.
-For the pourpose of this particular Anypoint Template the *mainFlow* just excecutes a [Batch Job](http://www.mulesoft.org/documentation/display/current/Batch+Processing), which handles all the logic of it.
+For the purpose of this particular Template the *mainFlow* uses a [Batch Job](http://www.mulesoft.org/documentation/display/current/Batch+Processing), which handles all the logic of it.
 ]]>
 		</section>
 	</sections>
