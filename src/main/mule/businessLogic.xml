@@ -1,51 +1,53 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
-<mule
-	xmlns:ee="http://www.mulesoft.org/schema/mule/ee/core" xmlns:tls="http://www.mulesoft.org/schema/mule/tls"
-	xmlns:email="http://www.mulesoft.org/schema/mule/email"
-	xmlns:salesforce="http://www.mulesoft.org/schema/mule/salesforce" xmlns:batch="http://www.mulesoft.org/schema/mule/batch"
-	xmlns="http://www.mulesoft.org/schema/mule/core"
-	xmlns:doc="http://www.mulesoft.org/schema/mule/documentation"
-	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd
+<mule xmlns:ee="http://www.mulesoft.org/schema/mule/ee/core" xmlns:tls="http://www.mulesoft.org/schema/mule/tls" xmlns:email="http://www.mulesoft.org/schema/mule/email"
+    xmlns:salesforce="http://www.mulesoft.org/schema/mule/salesforce" xmlns:batch="http://www.mulesoft.org/schema/mule/batch" xmlns="http://www.mulesoft.org/schema/mule/core"
+    xmlns:doc="http://www.mulesoft.org/schema/mule/documentation" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:schemaLocation="http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd
 http://www.mulesoft.org/schema/mule/batch http://www.mulesoft.org/schema/mule/batch/current/mule-batch.xsd
 http://www.mulesoft.org/schema/mule/salesforce http://www.mulesoft.org/schema/mule/salesforce/current/mule-salesforce.xsd
 http://www.mulesoft.org/schema/mule/email http://www.mulesoft.org/schema/mule/email/current/mule-email.xsd
 http://www.mulesoft.org/schema/mule/tls http://www.mulesoft.org/schema/mule/tls/current/mule-tls.xsd
 http://www.mulesoft.org/schema/mule/ee/core http://www.mulesoft.org/schema/mule/ee/core/current/mule-ee.xsd">
-	
-	<flow name="businesslogicFlow" doc:id="884f86c5-66e1-4701-bb9b-594c2a60abf3" >
-		<salesforce:query config-ref="Salesforce_Sfdc_A_config" doc:name="Query Opportunities from Salesforce instance A" doc:id="ebcf71a8-3192-4437-b2cb-b23f008afae5">
-			<salesforce:salesforce-query>SELECT LastModifiedDate, Name, Amount, StageName, Probability, CloseDate, Account.Id, Account.Name, Account.Industry, Account.NumberOfEmployees FROM Opportunity WHERE Amount &gt; 5000</salesforce:salesforce-query>
-		</salesforce:query>
-		<batch:job jobName="migrateOpportunitiesBatch" doc:id="79b373e6-1aeb-43a9-9dfe-8ac0d2f31fdc">
-			<batch:process-records >
-				<batch:step name="foreachOpportunityInAGetOpportunityInBStep" doc:id="232087de-e311-49c1-a890-439c65ea1af2" >
-					<salesforce:query-single config-ref="Salesforce_Sfdc_B_config" doc:name="query Opportunity in Salesforce instance B" doc:id="573f94bc-79b9-4219-b6bd-65200b61b7a2" target="IdInB">
-						<salesforce:salesforce-query >SELECT Id FROM Opportunity WHERE Name = ':name'</salesforce:salesforce-query>
-						<salesforce:parameters ><![CDATA[#[output applicaton/java
+
+    <flow name="businessLogicFlow" doc:id="884f86c5-66e1-4701-bb9b-594c2a60abf3">
+        <salesforce:query config-ref="Salesforce_Sfdc_A_config" doc:name="Query Opportunities from Salesforce instance A" doc:id="ebcf71a8-3192-4437-b2cb-b23f008afae5">
+            <salesforce:salesforce-query>SELECT LastModifiedDate, Name, Amount, StageName, Probability, CloseDate, Account.Id, Account.Name,
+                Account.Industry, Account.NumberOfEmployees FROM Opportunity WHERE Amount &gt; 5000 AND Account.Id &lt;&gt; null
+            </salesforce:salesforce-query>
+        </salesforce:query>
+        <batch:job jobName="migrateOpportunitiesBatch" doc:id="79b373e6-1aeb-43a9-9dfe-8ac0d2f31fdc">
+            <batch:process-records>
+                <batch:step name="foreachOpportunityInAGetOpportunityInBStep" doc:id="232087de-e311-49c1-a890-439c65ea1af2">
+                    <salesforce:query-single config-ref="Salesforce_Sfdc_B_config" doc:name="Query Opportunity in Salesforce instance B"
+                        doc:id="573f94bc-79b9-4219-b6bd-65200b61b7a2" target="IdInB">
+                        <salesforce:salesforce-query>SELECT Id FROM Opportunity WHERE Name = ':name'</salesforce:salesforce-query>
+                        <salesforce:parameters><![CDATA[#[output applicaton/java
 ---
 {
 	name : payload.Name
 }]]]></salesforce:parameters>
-					</salesforce:query-single>
-					<ee:transform doc:name="Push Id to payload" doc:id="5e6ecafa-54e0-4014-a786-899ba03a102f" >
-						<ee:message >
-							<ee:set-payload ><![CDATA[%dw 2.0
+                    </salesforce:query-single>
+                    <ee:transform doc:name="Push Id to payload" doc:id="5e6ecafa-54e0-4014-a786-899ba03a102f">
+                        <ee:message>
+                            <ee:set-payload><![CDATA[%dw 2.0
 output application/java
 ---
 payload ++ vars.IdInB]]></ee:set-payload>
-						</ee:message>
-					</ee:transform>
-				</batch:step>
-				<batch:step name="findOrCreateAccountInSalesforceStep" doc:id="acaea295-d3c0-46b5-b869-e3e59b429110" acceptExpression='#["${account.sync.policy}" == "syncAccount" and payload.Account != null]'>
-					<salesforce:query-single config-ref="Salesforce_Sfdc_B_config" doc:name="query Account in  Salesforce Instance B" doc:id="e3e41eb8-00b9-47bd-9717-e1513e6a79b1" target="accountId">
-						<salesforce:salesforce-query>SELECT Id FROM Account WHERE Name = ':name'</salesforce:salesforce-query>
-						<salesforce:parameters><![CDATA[#[output applicaton/java
+                        </ee:message>
+                    </ee:transform>
+                </batch:step>
+                <batch:step name="findOrCreateAccountInSalesforceStep" doc:id="acaea295-d3c0-46b5-b869-e3e59b429110"
+                    acceptExpression='#["${account.sync.policy}" == "syncAccount" and payload.Account != null]'>
+                    <salesforce:query-single config-ref="Salesforce_Sfdc_B_config" doc:name="Query Account in  Salesforce Instance B"
+                        doc:id="e3e41eb8-00b9-47bd-9717-e1513e6a79b1" target="accountId">
+                        <salesforce:salesforce-query>SELECT Id FROM Account WHERE Name = ':name'</salesforce:salesforce-query>
+                        <salesforce:parameters><![CDATA[#[output applicaton/java
 ---
 {
 	"name" : payload.Account.Name
 }]]]></salesforce:parameters>
-					</salesforce:query-single>
+                    </salesforce:query-single>
 					<ee:transform doc:name="Save record payload" doc:id="a6285fc1-69c9-4034-8baf-6a60e6041938" >
 						<ee:message >
 						</ee:message>
@@ -70,7 +72,7 @@ output application/java
 else "NumberOfEmployees": 0)]]]></ee:set-payload>
 								</ee:message>
 							</ee:transform>
-							<salesforce:create type="Account" doc:name="create Account in Salesforce Instance B" doc:id="7eb92ad4-956e-4b6b-a0c5-dfb585919754" config-ref="Salesforce_Sfdc_B_config" />
+							<salesforce:create type="Account" doc:name="Create Account in Salesforce Instance B" doc:id="7eb92ad4-956e-4b6b-a0c5-dfb585919754" config-ref="Salesforce_Sfdc_B_config" />
 							<ee:transform doc:name="Push Id to record payload" doc:id="592c3f5d-8216-4f91-bd9d-285d17688559" >
 								<ee:message >
 									<ee:set-payload ><![CDATA[%dw 2.0
@@ -83,7 +85,7 @@ vars.recordPayload ++ { AccountId : payload.id}]]></ee:set-payload>
 </when>
 						<otherwise >
 							<logger level="INFO" doc:name="Log - Existing Account Id already set!" doc:id="8388541c-b000-4c8e-be6e-1fcb7053bbae" message="Log - Existing Account Id already set!"/>
-							<ee:transform doc:name="record payload" doc:id="1473cc46-f3e5-418f-97d4-26c6d6a3f28c" >
+							<ee:transform doc:name="Record payload" doc:id="1473cc46-f3e5-418f-97d4-26c6d6a3f28c" >
 								<ee:message >
 									<ee:set-payload ><![CDATA[%dw 2.0
 output application/java
@@ -115,10 +117,10 @@ payload map {
 				</batch:step>
 			</batch:process-records>
 			<batch:on-complete >
-								<scatter-gather doc:name="Scatter-Gather" doc:id="ef2964ef-0b85-4c6c-a5ee-b834df639e7b">
-			<route>
-				<logger level="INFO" doc:name="Migration process has finished!" doc:id="b7575d38-7dbd-4602-9186-1bbb25234896" message="Migration process has finished!" />
-			</route>
+				<scatter-gather doc:name="Scatter-Gather" doc:id="ef2964ef-0b85-4c6c-a5ee-b834df639e7b">
+        			<route>
+        				<logger level="INFO" doc:name="Migration process has finished!" doc:id="b7575d38-7dbd-4602-9186-1bbb25234896" message="Migration process has finished!" />
+        			</route>
 					<route>
  						<ee:transform doc:name="Prepare migration result email"
  							doc:id="c84b4bc4-5a65-41c1-9d0c-f1ebd3d8db7a">
@@ -144,14 +146,14 @@ payload map {
  							</email:to-addresses>
  						</email:send>
  					</route>
-		</scatter-gather>
+		        </scatter-gather>
 			</batch:on-complete>
 		</batch:job>
 		<logger level="INFO" doc:name="Log - Migration process has started!" doc:id="673c18b0-db38-44f6-95ef-69edd1e75ed6" message="Migration process has started!"/>
 	</flow>
 	
 	<flow name="mainFlow" doc:id="7c0a5bef-b3d5-442f-bff3-10d038f69a5e" >
-		<flow-ref doc:name="businesslogicFlow" doc:id="91360ede-4d71-44c7-9b64-8ee762e04ea0" name="businesslogicFlow"/>
+		<flow-ref doc:name="businessLogicFlow" doc:id="91360ede-4d71-44c7-9b64-8ee762e04ea0" name="businessLogicFlow"/>
 		<error-handler >
 			<on-error-propagate enableNotifications="true" logException="true" doc:name="On Error Propagate" doc:id="488b507d-e26c-4c56-8759-8bb4f6645d71" type="ANY">
 				<flow-ref doc:name="errorHandlingFlow" doc:id="afdaf73c-0137-4d60-84f6-5c41234771a3" name="errorHandlingFlow" />
